@@ -1,3 +1,3 @@
-# terraform-azurerm-avm-template
+# Terraform Azure Enclave Community Module
 
-This is a template repo for Terraform Azure Verified Modules.
+// TODO: Write intro
