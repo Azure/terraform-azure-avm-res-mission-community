@@ -20,7 +20,7 @@ terraform {
 # This ensures we have unique CAF compliant names for our resources.
 module "naming" {
   source  = "Azure/avm-utl-naming/azure"
-  version = "~> 0.2"
+  version = "0.2.0"
 
   custom_override_file = "${path.module}/../naming-overrides.json"
   instance             = 1
