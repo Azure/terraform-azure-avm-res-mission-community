@@ -1,3 +1,3 @@
 # Default example
 
-This deploys the module in its simplest form.
+This deploys an Azure Enclave Community in its simplest form.
