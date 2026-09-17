@@ -50,7 +50,7 @@ The following outputs are exported:
 
 ### <a name="output_resource_id"></a> [resource\_id](#output\_resource\_id)
 
-Description: n/a
+Description: The resource ID of the Dedicated Hub.
 
 ## Modules
 

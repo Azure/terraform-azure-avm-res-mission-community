@@ -1,3 +1,4 @@
 output "resource_id" {
-  value = "placeholder"
+  description = "The resource ID of the Transit Hub."
+  value       = "placeholder"
 }
