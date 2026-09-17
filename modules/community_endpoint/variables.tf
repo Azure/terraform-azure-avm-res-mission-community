@@ -22,4 +22,3 @@ If it is set to false, then no telemetry will be collected.
 DESCRIPTION
   nullable    = false
 }
-

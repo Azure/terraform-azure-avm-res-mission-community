@@ -6,14 +6,14 @@ terraform {
       source  = "azure/azapi"
       version = "~> 2.12"
     }
-    modtm = {
-      source  = "azure/modtm"
-      version = "~> 0.3"
-    }
-    random = {
-      source  = "hashicorp/random"
-      version = "~> 3.5"
-    }
+    # modtm = {
+    #   source  = "azure/modtm"
+    #   version = "~> 0.3"
+    # }
+    # random = {
+    #   source  = "hashicorp/random"
+    #   version = "~> 3.5"
+    # }
   }
 }
 
@@ -51,5 +51,5 @@ module "test" {
   location         = azapi_resource.rg.location
   name             = module.naming.names_by_azure_type["Microsoft.Mission/communities"].community.name
   parent_id        = azapi_resource.rg.id
-  enable_telemetry = var.enable_telemetry # see variables.tf
+  enable_telemetry = false # see variables.tf
 }

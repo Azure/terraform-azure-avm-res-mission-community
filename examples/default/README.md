@@ -13,21 +13,21 @@ terraform {
       source  = "azure/azapi"
       version = "~> 2.12"
     }
-    modtm = {
-      source  = "azure/modtm"
-      version = "~> 0.3"
-    }
-    random = {
-      source  = "hashicorp/random"
-      version = "~> 3.5"
-    }
+    # modtm = {
+    #   source  = "azure/modtm"
+    #   version = "~> 0.3"
+    # }
+    # random = {
+    #   source  = "hashicorp/random"
+    #   version = "~> 3.5"
+    # }
   }
 }
 
 # This ensures we have unique CAF compliant names for our resources.
 module "naming" {
   source  = "Azure/avm-utl-naming/azure"
-  version = "~> 0.2"
+  version = "0.2.0"
 
   custom_override_file = "${path.module}/../naming-overrides.json"
   instance             = 1
@@ -58,7 +58,7 @@ module "test" {
   location         = azapi_resource.rg.location
   name             = module.naming.names_by_azure_type["Microsoft.Mission/communities"].community.name
   parent_id        = azapi_resource.rg.id
-  enable_telemetry = var.enable_telemetry # see variables.tf
+  enable_telemetry = false # see variables.tf
 }
 ```
 
@@ -70,10 +70,6 @@ The following requirements are needed by this module:
 - <a name="requirement_terraform"></a> [terraform](#requirement\_terraform) (~> 1.5)
 
 - <a name="requirement_azapi"></a> [azapi](#requirement\_azapi) (~> 2.12)
-
-- <a name="requirement_modtm"></a> [modtm](#requirement\_modtm) (~> 0.3)
-
-- <a name="requirement_random"></a> [random](#requirement\_random) (~> 3.5)
 
 ## Resources
 
@@ -120,7 +116,7 @@ The following Modules are called:
 
 Source: Azure/avm-utl-naming/azure
 
-Version: ~> 0.2
+Version: 0.2.0
 
 ### <a name="module_test"></a> [test](#module\_test)
 

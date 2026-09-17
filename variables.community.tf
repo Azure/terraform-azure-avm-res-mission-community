@@ -1,5 +1,6 @@
 # TODO: Add parameter for Dedicated Hubs map of object
 
+
 variable "address_spaces" {
   type        = list(string)
   description = "A list of address spaces for the Community resource. Each address space must be at least a /16 network. Only IPv4 is supported."
