@@ -1,5 +1,4 @@
-// TODO: Add parameter for Dedicated Hubs map of object
-
+# TODO: Add parameter for Dedicated Hubs map of object
 
 variable "address_spaces" {
   type        = list(string)

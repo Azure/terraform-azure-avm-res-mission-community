@@ -21,8 +21,8 @@ resource "azapi_resource" "this" {
       maintenanceModeConfiguration = var.maintenance_mode_configuration
       policyOverride               = var.policy_override
 
-      // TODO: Add monitoringSettings and communityRoleAssignments
-      // TODO: Add dedicatedHubs
+      # TODO: Add monitoringSettings and communityRoleAssignments
+      # TODO: Add dedicatedHubs
     }
   }
   tags = var.tags
