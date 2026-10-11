@@ -1,0 +1,14 @@
+{
+  "$schema": "https://raw.githubusercontent.com/Azure/terraform-azure-avm-utl-naming/refs/tags/v0.2.0/schemas/naming-overrides.schema.json",
+  "schema_version": 2,
+  "resources": {
+    "community": {
+      "resource_type": "Microsoft.Mission/communities",
+      "min_length": 3,
+      "max_length": 30,
+      "scope": "resourcegroup",
+      "regex": "^[a-zA-Z][a-zA-Z0-9-]*[a-zA-Z0-9]$",
+      "dashes": true
+    }
+  }
+}
