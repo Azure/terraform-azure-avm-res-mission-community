@@ -9,8 +9,10 @@ resource "azapi_resource" "this" {
   location  = var.location
   name      = var.name
   parent_id = var.parent_id
+
   # LATER: Consider making this a parameter to enable opting into newer or older API versions
   type = "Microsoft.Mission/communities@2026-03-01-preview"
+
   body = {
     properties = {
       addressSpaces                = var.address_spaces
