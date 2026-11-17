@@ -100,8 +100,11 @@ DESCRIPTION
 variable "maintenance_mode_configuration" {
   type = object({
     mode          = string
-    justification = optional(string, null)
-    principals    = list(string)
+    justification = string
+    principals = list(object({
+      id   = string
+      type = string
+    }))
   })
   default = {
     mode          = "Off"
@@ -113,8 +116,46 @@ Configuration for the Community's maintenance mode.
 
 - `mode` - Defines the maintenance mode status. Accepted values are 'On', 'Off', 'General', 'CanNotDelete', and 'Advanced'.
 - `justification` - (Optional) Provides a justification for the maintenance mode. Required when `mode` is not 'Off'. Defaults to `Off`. Allowed values are 'Off', 'Governance', 'Networking' and 'NotSpecified'.
-- `principals` - A list of principals (users, groups, or service principals) affected by the maintenance mode.
+- `principals` - A list of principal objects with `id` and `type` attributes representing the affected principals.
 DESCRIPTION
+
+  validation {
+    condition     = var.maintenance_mode_configuration.mode == "Off" || var.maintenance_mode_configuration.justification != ""
+    error_message = "If maintenance mode is not 'Off', a justification must be provided."
+  }
+
+  validation {
+    condition     = var.maintenance_mode_configuration.mode == "Off" || length(var.maintenance_mode_configuration.principals) > 0
+    error_message = "If maintenance mode is not 'Off', at least one principal must be provided."
+  }
+
+  validation {
+    condition     = contains(["On", "Off", "General", "CanNotDelete", "Advanced"], var.maintenance_mode_configuration.mode)
+    error_message = "The mode must be one of 'On', 'Off', 'General', 'CanNotDelete', or 'Advanced'."
+  }
+
+  validation {
+    condition     = contains(["Off", "Governance", "Networking", "NotSpecified"], var.maintenance_mode_configuration.justification)
+    error_message = "The justification must be one of 'Off', 'Governance', 'Networking', or 'NotSpecified'."
+  }
+
+  validation {
+    condition = alltrue(flatten([
+      for principal in var.maintenance_mode_configuration.principals : [
+        can(regex("^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$", principal.id))
+      ]
+    ]))
+    error_message = "The principal ID must be an Entra object ID formatted as a GUID."
+  }
+
+  validation {
+    condition = alltrue(flatten([
+      for principal in var.maintenance_mode_configuration.principals : [
+        contains(["Group", "ServicePrincipal", "User"], principal.type)
+      ]
+    ]))
+    error_message = "The principal type must be one of 'Group', 'ServicePrincipal', or 'User'."
+  }
 }
 
 variable "policy_override" {

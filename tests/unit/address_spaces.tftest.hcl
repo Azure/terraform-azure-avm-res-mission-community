@@ -8,8 +8,9 @@ variables {
   name      = "unit-test-cmt-eus-01"
   parent_id = "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/my-test-rg"
   maintenance_mode_configuration = {
-    mode       = "Off"
-    principals = []
+    mode          = "Off"
+    justification = "Off"
+    principals    = []
   }
 }
 
