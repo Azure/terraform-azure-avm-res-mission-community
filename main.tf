@@ -23,8 +23,8 @@ resource "azapi_resource" "this" {
       governedServiceList          = var.governed_service_list
       maintenanceModeConfiguration = var.maintenance_mode_configuration
       policyOverride               = var.policy_override
+      monitoringSettings           = var.monitoring_settings
 
-      # TODO: Add monitoringSettings
       # TODO: Add dedicatedHubs
       # TODO: Add transitHubs
       # TODO: Add communityEndpoints

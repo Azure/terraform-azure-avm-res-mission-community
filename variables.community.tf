@@ -111,7 +111,7 @@ variable "maintenance_mode_configuration" {
   description = <<DESCRIPTION
 Configuration for the Community's maintenance mode.
 
-- `mode` - Defines the maintenance mode status. Accepted values are 'Off', 'General', and 'Advanced'.
+- `mode` - Defines the maintenance mode status. Accepted values are 'On', 'Off', 'General', 'CanNotDelete', and 'Advanced'.
 - `justification` - (Optional) Provides a justification for the maintenance mode. Required when `mode` is not 'Off'. Defaults to `Off`. Allowed values are 'Off', 'Governance', 'Networking' and 'NotSpecified'.
 - `principals` - A list of principals (users, groups, or service principals) affected by the maintenance mode.
 DESCRIPTION
@@ -160,5 +160,51 @@ DESCRIPTION
       ]
     ]))
     error_message = "Each principal type must be one of: `Group`, `ServicePrincipal`, or `User`."
+  }
+}
+
+variable "monitoring_settings" {
+  type = object({
+    diagnosticDestinations = list(object({
+      customWorkspaceResourceId = optional(string, null)
+      destinationType           = string
+      diagnosticSettingsName    = optional(string, null)
+    }))
+    flowLogDestination = object({
+      customWorkspaceResourceId = optional(string, null)
+      destinationType           = string
+      diagnosticSettingsName    = optional(string, null)
+    })
+  })
+
+  default = null
+
+  description = <<DESCRIPTION
+Monitoring settings for the community for diagnostic logging and network flow logging. If you do not provide a value, diagnostic and flow logging will use a Community Log Analytics workspace.
+
+- `diagnosticDestinations` - A list of diagnostic destinations.
+  - `customWorkspaceResourceId` - The resource ID of a Log Analytics workspace. Required and must be a valid workspace resource ID when `destinationType` is `CustomWorkspace`; otherwise optional.
+  - `destinationType` - The type of the diagnostic destination. One of `CommunityWorkspace`, `CustomWorkspace`, `EnclaveWorkspace`.
+  - `diagnosticSettingsName` - (Optional) The name of the diagnostic setting.
+- `flowLogDestination` - The destination for network flow logs.
+  - `customWorkspaceResourceId` - The resource ID of a Log Analytics workspace. Required and must be a valid workspace resource ID when `destinationType` is `CustomWorkspace`; otherwise optional.
+  - `destinationType` - The type of the flow log destination. One of `CommunityWorkspace`, `CustomWorkspace`, `EnclaveWorkspace`.
+  - `diagnosticSettingsName` - (Optional) The name of the diagnostic setting.
+DESCRIPTION
+
+  validation {
+    condition = var.monitoring_settings == null || alltrue([
+      for destination in concat(var.monitoring_settings.diagnosticDestinations, [var.monitoring_settings.flowLogDestination]) :
+      contains(["CommunityWorkspace", "CustomWorkspace", "EnclaveWorkspace"], destination.destinationType)
+    ])
+    error_message = "The destinationType for diagnosticDestinations and flowLogDestination must be one of: `CommunityWorkspace`, `CustomWorkspace`, or `EnclaveWorkspace`."
+  }
+
+  validation {
+    condition = var.monitoring_settings == null || alltrue([
+      for destination in concat(var.monitoring_settings.diagnosticDestinations, [var.monitoring_settings.flowLogDestination]) :
+      destination.destinationType == "CustomWorkspace" ? can(provider::azapi::parse_resource_id("Microsoft.OperationalInsights/workspaces", destination.customWorkspaceResourceId)) : true
+    ])
+    error_message = "When destinationType is `CustomWorkspace`, the corresponding customWorkspaceResourceId in diagnosticDestinations or flowLogDestination must be a valid Azure Log Analytics workspace resource ID."
   }
 }
