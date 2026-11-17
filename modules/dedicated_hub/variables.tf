@@ -1,10 +1,3 @@
-variable "location" {
-  type        = string
-  default     = null
-  description = "Azure region where the dedicated hub should be deployed. If null or not specified, the location of the parent Community will be used."
-  nullable    = true
-}
-
 variable "name" {
   type        = string
   description = "The name of the this resource."
@@ -29,6 +22,12 @@ For more information see <https://aka.ms/avm/telemetryinfo>.
 If it is set to false, then no telemetry will be collected.
 DESCRIPTION
   nullable    = false
+}
+
+variable "location" {
+  type        = string
+  default     = null
+  description = "Azure region where the dedicated hub should be deployed. If null or not specified, the location of the parent Community will be used."
 }
 
 # tflint-ignore: terraform_unused_declarations

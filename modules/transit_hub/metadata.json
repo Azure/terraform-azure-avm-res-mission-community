@@ -1,0 +1,7 @@
+{
+  "$schema": "https://raw.githubusercontent.com/Azure/azure-verified-modules-tools/main/src/Avm.Authoring/Resources/Schemas/v1/avm-module-metadata.schema.json",
+  "moduleDisplayName": "Azure Enclave Transit Hub",
+  "moduleDescription": "AVM Terraform resource module for Azure Enclave Transit Hub.",
+  "canonicalType": "Microsoft.Mission/communities/transitHubs",
+  "telemetryIdPrefix": "46d3xtrf.res.01a1eb8"
+}
