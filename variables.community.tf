@@ -116,24 +116,24 @@ variable "firewall_sku" {
 
 variable "governed_service_list" {
   type = list(object({
-    service_id    = string
-    option        = string
-    enforcement   = optional(string, "Enabled")
-    policy_action = optional(string, "Enforce")
+    serviceId    = string
+    option       = string
+    enforcement  = optional(string, "Enabled")
+    policyAction = optional(string, "Enforce")
   }))
   default     = []
   description = <<DESCRIPTION
 A list of governed services within the community. Each item in the list represents a specific governed service, and the value is an object defining the service details.
 
-- `service_id` - One of 'AKS', 'AppService', 'AzureFirewalls', 'ContainerRegistry', 'CosmosDB', 'DataConnectors', 'Insights', 'KeyVault', 'Logic', 'MicrosoftSQL', 'Monitoring', 'PostgreSQL', 'PrivateDNSZones', 'ServiceBus', 'Storage'
+- `serviceId` - One of 'AKS', 'AppService', 'AzureFirewalls', 'ContainerRegistry', 'CosmosDB', 'DataConnectors', 'Insights', 'KeyVault', 'Logic', 'MicrosoftSQL', 'Monitoring', 'PostgreSQL', 'PrivateDNSZones', 'ServiceBus', 'Storage'
 - `option` - Defines whether the service is permitted. Accepted values are 'Allow', 'Deny', 'ExceptionOnly', and 'NotApplicable'.
 - `enforcement` - (Optional) Defines if the initiative is enforced. Accepted values are 'Enabled' and 'Disabled'. Defaults to `Enabled`.
-- `policy_action` - (Optional) Defines the policy action to take. Accepted values are 'AuditOnly', 'Enforce' and 'None'. Defaults to `Enforce`.
+- `policyAction` - (Optional) Defines the policy action to take. Accepted values are 'AuditOnly', 'Enforce' and 'None'. Defaults to `Enforce`.
 DESCRIPTION
 
   validation {
     condition = alltrue([
-      for service in var.governed_service_list : contains(["AKS", "AppService", "AzureFirewalls", "ContainerRegistry", "CosmosDB", "DataConnectors", "Insights", "KeyVault", "Logic", "MicrosoftSQL", "Monitoring", "PostgreSQL", "PrivateDNSZones", "ServiceBus", "Storage"], service.service_id)
+      for service in var.governed_service_list : contains(["AKS", "AppService", "AzureFirewalls", "ContainerRegistry", "CosmosDB", "DataConnectors", "Insights", "KeyVault", "Logic", "MicrosoftSQL", "Monitoring", "PostgreSQL", "PrivateDNSZones", "ServiceBus", "Storage"], service.serviceId)
     ])
     error_message = "Each governed service must have a valid service_id from 'AKS', 'AppService', 'AzureFirewalls', 'ContainerRegistry', 'CosmosDB', 'DataConnectors', 'Insights', 'KeyVault', 'Logic', 'MicrosoftSQL', 'Monitoring', 'PostgreSQL', 'PrivateDNSZones', 'ServiceBus', or 'Storage'."
   }
