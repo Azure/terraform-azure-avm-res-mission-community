@@ -24,10 +24,6 @@ resource "azapi_resource" "this" {
       maintenanceModeConfiguration = var.maintenance_mode_configuration
       policyOverride               = var.policy_override
       monitoringSettings           = var.monitoring_settings
-
-      # TODO: Add dedicatedHubs
-      # TODO: Add transitHubs
-      # TODO: Add communityEndpoints
     }
   }
 
@@ -63,3 +59,19 @@ resource "azapi_resource" "role_assignments" {
     }
   }
 }
+
+module "dedicated_hubs" {
+  source = "./modules/dedicated_hub"
+
+  for_each = var.dedicated_hubs
+
+  name        = each.value.name
+  designation = each.value.designation
+  parent_id   = azapi_resource.this.id
+  location    = each.value.location != null ? each.value.location : azapi_resource.this.location
+
+  tags = var.tags
+}
+
+# TODO: Add transitHubs
+# TODO: Add communityEndpoints

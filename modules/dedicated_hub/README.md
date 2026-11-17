@@ -17,7 +17,10 @@ The following requirements are needed by this module:
 
 ## Resources
 
-No resources.
+The following resources are used by this module:
+
+- [azapi_resource.this](https://registry.terraform.io/providers/Azure/azapi/latest/docs/resources/resource) (resource)
+- [azapi_resource.community](https://registry.terraform.io/providers/Azure/azapi/latest/docs/data-sources/resource) (data source)
 
 <!-- markdownlint-disable MD013 -->
 ## Required Inputs
@@ -30,9 +33,23 @@ Description: The name of the this resource.
 
 Type: `string`
 
+### <a name="input_parent_id"></a> [parent\_id](#input\_parent\_id)
+
+Description: The resource ID of the community to which this dedicated hub belongs.
+
+Type: `string`
+
 ## Optional Inputs
 
 The following input variables are optional (have default values):
+
+### <a name="input_designation"></a> [designation](#input\_designation)
+
+Description: n/a
+
+Type: `string`
+
+Default: `"Pooled"`
 
 ### <a name="input_enable_telemetry"></a> [enable\_telemetry](#input\_enable\_telemetry)
 
@@ -43,6 +60,22 @@ If it is set to false, then no telemetry will be collected.
 Type: `bool`
 
 Default: `true`
+
+### <a name="input_location"></a> [location](#input\_location)
+
+Description: Azure region where the dedicated hub should be deployed. If null or not specified, the location of the parent Community will be used.
+
+Type: `string`
+
+Default: `null`
+
+### <a name="input_tags"></a> [tags](#input\_tags)
+
+Description: (Optional) Tags of the resource.
+
+Type: `map(string)`
+
+Default: `null`
 
 ## Outputs
 

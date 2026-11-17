@@ -106,6 +106,8 @@ variable "maintenance_mode_configuration" {
       type = string
     }))
   })
+
+  # TODO: Remove "On" and "CanNotDelete" from the accepted values for maintenance mode.
   default = {
     mode          = "Off"
     justification = "Off"
@@ -248,4 +250,14 @@ DESCRIPTION
     ])
     error_message = "When destinationType is `CustomWorkspace`, the corresponding customWorkspaceResourceId in diagnosticDestinations or flowLogDestination must be a valid Azure Log Analytics workspace resource ID."
   }
+}
+
+variable "dedicated_hubs" {
+  type = map(object({
+    name        = string
+    designation = string
+    location    = optional(string, null)
+  }))
+
+  default = {}
 }
