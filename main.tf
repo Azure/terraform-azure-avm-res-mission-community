@@ -1,7 +1,9 @@
 module "avm_interfaces" {
   source  = "Azure/avm-utl-interfaces/azure"
-  version = "0.7.0"
+  version = "0.9.0"
 
+  location           = var.location
+  enable_telemetry   = var.enable_telemetry
   managed_identities = var.managed_identities
 }
 
@@ -9,10 +11,8 @@ resource "azapi_resource" "this" {
   location  = var.location
   name      = var.name
   parent_id = var.parent_id
-
   # LATER: Consider making this a parameter to enable opting into newer or older API versions
   type = "Microsoft.Mission/communities@2026-04-01"
-
   body = {
     properties = {
       addressSpaces                = var.address_spaces
@@ -26,11 +26,9 @@ resource "azapi_resource" "this" {
       monitoringSettings           = var.monitoring_settings
     }
   }
-
-  tags = var.tags
-
   // HACK: 2026-11-16: Temporary because azapi 2.13 does not have this API version
   schema_validation_enabled = false
+  tags                      = var.tags
 
   dynamic "identity" {
     for_each = module.avm_interfaces.managed_identities_azapi != null ? [module.avm_interfaces.managed_identities_azapi] : []
@@ -44,9 +42,8 @@ resource "azapi_resource" "this" {
 resource "azapi_resource" "role_assignments" {
   for_each = var.role_assignments
 
-  type      = "Microsoft.Authorization/roleAssignments@2022-04-01"
   parent_id = azapi_resource.this.id
-
+  type      = "Microsoft.Authorization/roleAssignments@2022-04-01"
   body = {
     properties = {
       principalId                        = each.value.principal_id
@@ -61,16 +58,15 @@ resource "azapi_resource" "role_assignments" {
 }
 
 module "dedicated_hubs" {
-  source = "./modules/dedicated_hub"
-
+  source   = "./modules/dedicated_hub"
   for_each = var.dedicated_hubs
 
-  name        = each.value.name
-  designation = each.value.designation
-  parent_id   = azapi_resource.this.id
-  location    = each.value.location != null ? each.value.location : azapi_resource.this.location
-
-  tags = var.tags
+  name             = each.value.name
+  parent_id        = azapi_resource.this.id
+  designation      = each.value.designation
+  enable_telemetry = var.enable_telemetry
+  location         = each.value.location != null ? each.value.location : azapi_resource.this.location
+  tags             = var.tags
 }
 
 # TODO: Add transitHubs

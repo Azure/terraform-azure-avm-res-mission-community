@@ -11,9 +11,7 @@ The following requirements are needed by this module:
 
 - <a name="requirement_terraform"></a> [terraform](#requirement\_terraform) (>= 1.9, < 2.0)
 
-- <a name="requirement_azapi"></a> [azapi](#requirement\_azapi) (~> 2.12)
-
-- <a name="requirement_modtm"></a> [modtm](#requirement\_modtm) (~> 0.3)
+- <a name="requirement_azapi"></a> [azapi](#requirement\_azapi) (~> 2.13)
 
 - <a name="requirement_random"></a> [random](#requirement\_random) (~> 3.5)
 
@@ -22,11 +20,11 @@ The following requirements are needed by this module:
 The following resources are used by this module:
 
 - [azapi_resource.lock](https://registry.terraform.io/providers/Azure/azapi/latest/docs/resources/resource) (resource)
+- [azapi_resource.role_assignments](https://registry.terraform.io/providers/Azure/azapi/latest/docs/resources/resource) (resource)
+- [azapi_resource.telemetry](https://registry.terraform.io/providers/Azure/azapi/latest/docs/resources/resource) (resource)
 - [azapi_resource.this](https://registry.terraform.io/providers/Azure/azapi/latest/docs/resources/resource) (resource)
-- [modtm_telemetry.telemetry](https://registry.terraform.io/providers/azure/modtm/latest/docs/resources/telemetry) (resource)
-- [random_uuid.telemetry](https://registry.terraform.io/providers/hashicorp/random/latest/docs/resources/uuid) (resource)
+- [terraform_data.telemetry](https://registry.terraform.io/providers/hashicorp/terraform/latest/docs/resources/data) (resource)
 - [azapi_client_config.telemetry](https://registry.terraform.io/providers/Azure/azapi/latest/docs/data-sources/client_config) (data source)
-- [modtm_module_source.telemetry](https://registry.terraform.io/providers/azure/modtm/latest/docs/data-sources/module_source) (data source)
 
 <!-- markdownlint-disable MD013 -->
 ## Required Inputs
@@ -92,33 +90,48 @@ map(object({
   }))
 ```
 
-Default:
+Default: `{}`
 
-```json
-{
-  "communityEndpointUpdate": {
-    "approvalPolicy": "NotRequired"
-  },
-  "communityMaintenanceMode": {
-    "approvalPolicy": "NotRequired"
-  },
-  "connectionCreation": {
-    "approvalPolicy": "NotRequired"
-  },
-  "connectionUpdate": {
-    "approvalPolicy": "NotRequired"
-  },
-  "enclaveCreation": {
-    "approvalPolicy": "NotRequired"
-  },
-  "enclaveEndpointUpdate": {
-    "approvalPolicy": "NotRequired"
-  },
-  "enclaveMaintenanceMode": {
-    "approvalPolicy": "NotRequired"
-  }
-}
+### <a name="input_community_role_assignments"></a> [community\_role\_assignments](#input\_community\_role\_assignments)
+
+Description: A list of role assignments for Community administrators. Use this variable instead of the default AVM `role_assignments` variable when granting Community administrator access because `community_role_assignments` creates role assignments on the managed resource group associated with the Community, whereas `role_assignments` creates role assignments scoped to the Community resource only.
+
+- `condition` - (Optional) The condition under which the principals can be granted permission.
+- `principals` - A list of principals to which the role definition is assigned.
+  - `id` - The object ID of the principal.
+  - `type` - The principal type. Possible values are `Group`, `ServicePrincipal`, and `User`.
+- `role_definition_id` - The role definition identifier to assign to the principals.
+
+Type:
+
+```hcl
+list(object({
+    condition = optional(string, null)
+    principals = list(object({
+      id   = string
+      type = string
+    }))
+    role_definition_id = string
+  }))
 ```
+
+Default: `[]`
+
+### <a name="input_dedicated_hubs"></a> [dedicated\_hubs](#input\_dedicated\_hubs)
+
+Description: n/a
+
+Type:
+
+```hcl
+map(object({
+    name        = string
+    designation = string
+    location    = optional(string, null)
+  }))
+```
+
+Default: `{}`
 
 ### <a name="input_diagnostic_settings"></a> [diagnostic\_settings](#input\_diagnostic\_settings)
 
@@ -224,17 +237,20 @@ Default: `null`
 
 Description: Configuration for the Community's maintenance mode.
 
-- `mode` - Defines the maintenance mode status. Accepted values are 'Off', 'General', and 'Advanced'.
-- `justification` - (Optional) Provides a justification for the maintenance mode. Required when `mode` is not 'Off'. Defaults to `null`. Allowed values are 'Off', 'Governance', and 'Networking'.
-- `principals` - A list of principals (users, groups, or service principals) affected by the maintenance mode.
+- `mode` - Defines the maintenance mode status. Accepted values are 'On', 'Off', 'General', 'CanNotDelete', and 'Advanced'.
+- `justification` - (Optional) Provides a justification for the maintenance mode. Required when `mode` is not 'Off'. Defaults to `Off`. Allowed values are 'Off', 'Governance', 'Networking' and 'NotSpecified'.
+- `principals` - A list of principal objects with `id` and `type` attributes representing the affected principals.
 
 Type:
 
 ```hcl
 object({
     mode          = string
-    justification = optional(string, null)
-    principals    = list(string)
+    justification = string
+    principals = list(object({
+      id   = string
+      type = string
+    }))
   })
 ```
 
@@ -242,6 +258,7 @@ Default:
 
 ```json
 {
+  "justification": "Off",
   "mode": "Off",
   "principals": []
 }
@@ -264,6 +281,38 @@ object({
 ```
 
 Default: `{}`
+
+### <a name="input_monitoring_settings"></a> [monitoring\_settings](#input\_monitoring\_settings)
+
+Description: Monitoring settings for the community for diagnostic logging and network flow logging. If you do not provide a value, diagnostic and flow logging will use a Community Log Analytics workspace.
+
+- `diagnosticDestinations` - A list of diagnostic destinations.
+  - `customWorkspaceResourceId` - The resource ID of a Log Analytics workspace. Required and must be a valid workspace resource ID when `destinationType` is `CustomWorkspace`; otherwise optional.
+  - `destinationType` - The type of the diagnostic destination. One of `CommunityWorkspace`, `CustomWorkspace`, `EnclaveWorkspace`.
+  - `diagnosticSettingsName` - (Optional) The name of the diagnostic setting.
+- `flowLogDestination` - The destination for network flow logs.
+  - `customWorkspaceResourceId` - The resource ID of a Log Analytics workspace. Required and must be a valid workspace resource ID when `destinationType` is `CustomWorkspace`; otherwise optional.
+  - `destinationType` - The type of the flow log destination. One of `CommunityWorkspace`, `CustomWorkspace`, `EnclaveWorkspace`.
+  - `diagnosticSettingsName` - (Optional) The name of the diagnostic setting.
+
+Type:
+
+```hcl
+object({
+    diagnosticDestinations = list(object({
+      customWorkspaceResourceId = optional(string, null)
+      destinationType           = string
+      diagnosticSettingsName    = optional(string, null)
+    }))
+    flowLogDestination = object({
+      customWorkspaceResourceId = optional(string, null)
+      destinationType           = string
+      diagnosticSettingsName    = optional(string, null)
+    })
+  })
+```
+
+Default: `null`
 
 ### <a name="input_policy_override"></a> [policy\_override](#input\_policy\_override)
 
@@ -329,7 +378,13 @@ The following Modules are called:
 
 Source: Azure/avm-utl-interfaces/azure
 
-Version: 0.7.0
+Version: 0.9.0
+
+### <a name="module_dedicated_hubs"></a> [dedicated\_hubs](#module\_dedicated\_hubs)
+
+Source: ./modules/dedicated_hub
+
+Version:
 
 <!-- markdownlint-disable-next-line MD041 -->
 ## Data Collection

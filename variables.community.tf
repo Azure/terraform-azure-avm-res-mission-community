@@ -1,5 +1,6 @@
 # TODO: Add parameter for Dedicated Hubs map of object
 
+
 variable "address_spaces" {
   type        = list(string)
   description = "A list of address spaces for the Community resource. Each address space must be at least a /16 network. Only IPv4 is supported."
@@ -54,6 +55,47 @@ DESCRIPTION
   }
 }
 
+variable "community_role_assignments" {
+  type = list(object({
+    condition = optional(string, null)
+    principals = list(object({
+      id   = string
+      type = string
+    }))
+    role_definition_id = string
+  }))
+  default     = []
+  description = <<DESCRIPTION
+A list of role assignments for Community administrators. Use this variable instead of the default AVM `role_assignments` variable when granting Community administrator access because `community_role_assignments` creates role assignments on the managed resource group associated with the Community, whereas `role_assignments` creates role assignments scoped to the Community resource only.
+
+- `condition` - (Optional) The condition under which the principals can be granted permission.
+- `principals` - A list of principals to which the role definition is assigned.
+  - `id` - The object ID of the principal.
+  - `type` - The principal type. Possible values are `Group`, `ServicePrincipal`, and `User`.
+- `role_definition_id` - The role definition identifier to assign to the principals.
+DESCRIPTION
+  nullable    = false
+
+  validation {
+    condition = alltrue(flatten([
+      for role_assignment in var.community_role_assignments : [
+        for principal in role_assignment.principals :
+        contains(["Group", "ServicePrincipal", "User"], principal.type)
+      ]
+    ]))
+    error_message = "Each principal type must be one of: `Group`, `ServicePrincipal`, or `User`."
+  }
+}
+
+variable "dedicated_hubs" {
+  type = map(object({
+    name        = string
+    designation = string
+    location    = optional(string, null)
+  }))
+  default = {}
+}
+
 variable "dns_servers" {
   type        = list(string)
   default     = null
@@ -106,7 +148,6 @@ variable "maintenance_mode_configuration" {
       type = string
     }))
   })
-
   # TODO: Remove "On" and "CanNotDelete" from the accepted values for maintenance mode.
   default = {
     mode          = "Off"
@@ -125,22 +166,18 @@ DESCRIPTION
     condition     = var.maintenance_mode_configuration.mode == "Off" || var.maintenance_mode_configuration.justification != ""
     error_message = "If maintenance mode is not 'Off', a justification must be provided."
   }
-
   validation {
     condition     = var.maintenance_mode_configuration.mode == "Off" || length(var.maintenance_mode_configuration.principals) > 0
     error_message = "If maintenance mode is not 'Off', at least one principal must be provided."
   }
-
   validation {
     condition     = contains(["On", "Off", "General", "CanNotDelete", "Advanced"], var.maintenance_mode_configuration.mode)
     error_message = "The mode must be one of 'On', 'Off', 'General', 'CanNotDelete', or 'Advanced'."
   }
-
   validation {
     condition     = contains(["Off", "Governance", "Networking", "NotSpecified"], var.maintenance_mode_configuration.justification)
     error_message = "The justification must be one of 'Off', 'Governance', 'Networking', or 'NotSpecified'."
   }
-
   validation {
     condition = alltrue(flatten([
       for principal in var.maintenance_mode_configuration.principals : [
@@ -149,7 +186,6 @@ DESCRIPTION
     ]))
     error_message = "The principal ID must be an Entra object ID formatted as a GUID."
   }
-
   validation {
     condition = alltrue(flatten([
       for principal in var.maintenance_mode_configuration.principals : [
@@ -157,52 +193,6 @@ DESCRIPTION
       ]
     ]))
     error_message = "The principal type must be one of 'Group', 'ServicePrincipal', or 'User'."
-  }
-}
-
-variable "policy_override" {
-  type        = string
-  default     = "None"
-  description = <<DESCRIPTION
-Policy override setting for the community. Specifies whether to allow enclave-specific policies to override community policies. Defaults to `None`.
-DESCRIPTION
-  nullable    = false
-
-  validation {
-    condition     = contains(["None", "Enclave"], var.policy_override)
-    error_message = "The policy_override must be one of 'None', 'Enclave'."
-  }
-}
-
-variable "community_role_assignments" {
-  type = list(object({
-    condition = optional(string, null)
-    principals = list(object({
-      id   = string
-      type = string
-    }))
-    role_definition_id = string
-  }))
-  default     = []
-  description = <<DESCRIPTION
-A list of role assignments for Community administrators. Use this variable instead of the default AVM `role_assignments` variable when granting Community administrator access because `community_role_assignments` creates role assignments on the managed resource group associated with the Community, whereas `role_assignments` creates role assignments scoped to the Community resource only.
-
-- `condition` - (Optional) The condition under which the principals can be granted permission.
-- `principals` - A list of principals to which the role definition is assigned.
-  - `id` - The object ID of the principal.
-  - `type` - The principal type. Possible values are `Group`, `ServicePrincipal`, and `User`.
-- `role_definition_id` - The role definition identifier to assign to the principals.
-DESCRIPTION
-  nullable    = false
-
-  validation {
-    condition = alltrue(flatten([
-      for role_assignment in var.community_role_assignments : [
-        for principal in role_assignment.principals :
-        contains(["Group", "ServicePrincipal", "User"], principal.type)
-      ]
-    ]))
-    error_message = "Each principal type must be one of: `Group`, `ServicePrincipal`, or `User`."
   }
 }
 
@@ -219,9 +209,7 @@ variable "monitoring_settings" {
       diagnosticSettingsName    = optional(string, null)
     })
   })
-
-  default = null
-
+  default     = null
   description = <<DESCRIPTION
 Monitoring settings for the community for diagnostic logging and network flow logging. If you do not provide a value, diagnostic and flow logging will use a Community Log Analytics workspace.
 
@@ -242,7 +230,6 @@ DESCRIPTION
     ])
     error_message = "The destinationType for diagnosticDestinations and flowLogDestination must be one of: `CommunityWorkspace`, `CustomWorkspace`, or `EnclaveWorkspace`."
   }
-
   validation {
     condition = var.monitoring_settings == null || alltrue([
       for destination in concat(var.monitoring_settings.diagnosticDestinations, [var.monitoring_settings.flowLogDestination]) :
@@ -252,12 +239,16 @@ DESCRIPTION
   }
 }
 
-variable "dedicated_hubs" {
-  type = map(object({
-    name        = string
-    designation = string
-    location    = optional(string, null)
-  }))
+variable "policy_override" {
+  type        = string
+  default     = "None"
+  description = <<DESCRIPTION
+Policy override setting for the community. Specifies whether to allow enclave-specific policies to override community policies. Defaults to `None`.
+DESCRIPTION
+  nullable    = false
 
-  default = {}
+  validation {
+    condition     = contains(["None", "Enclave"], var.policy_override)
+    error_message = "The policy_override must be one of 'None', 'Enclave'."
+  }
 }
