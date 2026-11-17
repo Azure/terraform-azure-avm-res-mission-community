@@ -1,6 +1,5 @@
 # TODO: Add parameter for Dedicated Hubs map of object
 
-
 variable "address_spaces" {
   type        = list(string)
   description = "A list of address spaces for the Community resource. Each address space must be at least a /16 network. Only IPv4 is supported."
@@ -25,29 +24,7 @@ variable "approval_settings" {
       approverEntraId = string
     })), [])
   }))
-  default = {
-    communityEndpointUpdate = {
-      approvalPolicy = "NotRequired"
-    }
-    communityMaintenanceMode = {
-      approvalPolicy = "NotRequired"
-    }
-    connectionCreation = {
-      approvalPolicy = "NotRequired"
-    }
-    connectionUpdate = {
-      approvalPolicy = "NotRequired"
-    }
-    enclaveCreation = {
-      approvalPolicy = "NotRequired"
-    }
-    enclaveEndpointUpdate = {
-      approvalPolicy = "NotRequired"
-    }
-    enclaveMaintenanceMode = {
-      approvalPolicy = "NotRequired"
-    }
-  }
+  default     = {}
   description = <<DESCRIPTION
 Approval settings for various community operations. Each key in the map represents a specific operation, and the value is an object defining the approval requirements for that operation.
 
@@ -127,14 +104,15 @@ variable "maintenance_mode_configuration" {
     principals    = list(string)
   })
   default = {
-    mode       = "Off"
-    principals = []
+    mode          = "Off"
+    justification = "Off"
+    principals    = []
   }
   description = <<DESCRIPTION
 Configuration for the Community's maintenance mode.
 
 - `mode` - Defines the maintenance mode status. Accepted values are 'Off', 'General', and 'Advanced'.
-- `justification` - (Optional) Provides a justification for the maintenance mode. Required when `mode` is not 'Off'. Defaults to `null`. Allowed values are 'Off', 'Governance', and 'Networking'.
+- `justification` - (Optional) Provides a justification for the maintenance mode. Required when `mode` is not 'Off'. Defaults to `Off`. Allowed values are 'Off', 'Governance', 'Networking' and 'NotSpecified'.
 - `principals` - A list of principals (users, groups, or service principals) affected by the maintenance mode.
 DESCRIPTION
 }
@@ -150,5 +128,37 @@ DESCRIPTION
   validation {
     condition     = contains(["None", "Enclave"], var.policy_override)
     error_message = "The policy_override must be one of 'None', 'Enclave'."
+  }
+}
+
+variable "community_role_assignments" {
+  type = list(object({
+    condition = optional(string, null)
+    principals = list(object({
+      id   = string
+      type = string
+    }))
+    role_definition_id = string
+  }))
+  default     = []
+  description = <<DESCRIPTION
+A list of role assignments for Community administrators. Use this variable instead of the default AVM `role_assignments` variable when granting Community administrator access because `community_role_assignments` creates role assignments on the managed resource group associated with the Community, whereas `role_assignments` creates role assignments scoped to the Community resource only.
+
+- `condition` - (Optional) The condition under which the principals can be granted permission.
+- `principals` - A list of principals to which the role definition is assigned.
+  - `id` - The object ID of the principal.
+  - `type` - The principal type. Possible values are `Group`, `ServicePrincipal`, and `User`.
+- `role_definition_id` - The role definition identifier to assign to the principals.
+DESCRIPTION
+  nullable    = false
+
+  validation {
+    condition = alltrue(flatten([
+      for role_assignment in var.community_role_assignments : [
+        for principal in role_assignment.principals :
+        contains(["Group", "ServicePrincipal", "User"], principal.type)
+      ]
+    ]))
+    error_message = "Each principal type must be one of: `Group`, `ServicePrincipal`, or `User`."
   }
 }

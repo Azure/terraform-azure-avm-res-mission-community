@@ -11,23 +11,30 @@ resource "azapi_resource" "this" {
   parent_id = var.parent_id
 
   # LATER: Consider making this a parameter to enable opting into newer or older API versions
-  type = "Microsoft.Mission/communities@2026-03-01-preview"
+  type = "Microsoft.Mission/communities@2026-04-01"
 
   body = {
     properties = {
       addressSpaces                = var.address_spaces
       approvalSettings             = var.approval_settings
+      communityRoleAssignments     = var.community_role_assignments
       dnsServers                   = var.dns_servers
       firewallSku                  = var.firewall_sku
       governedServiceList          = var.governed_service_list
       maintenanceModeConfiguration = var.maintenance_mode_configuration
       policyOverride               = var.policy_override
 
-      # TODO: Add monitoringSettings and communityRoleAssignments
+      # TODO: Add monitoringSettings
       # TODO: Add dedicatedHubs
+      # TODO: Add transitHubs
+      # TODO: Add communityEndpoints
     }
   }
+
   tags = var.tags
+
+  // HACK: 2026-11-16: Temporary because azapi 2.13 does not have this API version
+  schema_validation_enabled = false
 
   dynamic "identity" {
     for_each = module.avm_interfaces.managed_identities_azapi != null ? [module.avm_interfaces.managed_identities_azapi] : []
@@ -38,17 +45,21 @@ resource "azapi_resource" "this" {
   }
 }
 
-# TODO: required AVM resources interfaces
-# resource "azurerm_role_assignment" "this" {
-#   for_each = var.role_assignments
+resource "azapi_resource" "role_assignments" {
+  for_each = var.role_assignments
 
-#   principal_id                           = each.value.principal_id
-#   scope                                  = azurerm_resource_group.TODO.id # TODO: Replace this dummy resource azurerm_resource_group.TODO with your module resource
-#   condition                              = each.value.condition
-#   condition_version                      = each.value.condition_version
-#   delegated_managed_identity_resource_id = each.value.delegated_managed_identity_resource_id
-#   principal_type                         = each.value.principal_type
-#   role_definition_id                     = strcontains(lower(each.value.role_definition_id_or_name), lower(local.role_definition_resource_substring)) ? each.value.role_definition_id_or_name : null
-#   role_definition_name                   = strcontains(lower(each.value.role_definition_id_or_name), lower(local.role_definition_resource_substring)) ? null : each.value.role_definition_id_or_name
-#   skip_service_principal_aad_check       = each.value.skip_service_principal_aad_check
-# }
+  type      = "Microsoft.Authorization/roleAssignments@2022-04-01"
+  parent_id = azapi_resource.this.id
+
+  body = {
+    properties = {
+      principalId                        = each.value.principal_id
+      principalType                      = each.value.principal_type
+      roleDefinitionId                   = strcontains(lower(each.value.role_definition_id_or_name), lower(local.role_definition_resource_substring)) ? each.value.role_definition_id_or_name : null
+      condition                          = each.value.condition
+      conditionVersion                   = each.value.condition_version
+      delegatedManagedIdentityResourceId = each.value.delegated_managed_identity_resource_id
+      description                        = each.value.description
+    }
+  }
+}
