@@ -8,7 +8,12 @@ resource "azapi_resource" "this" {
       designation = var.designation
     }
   }
-  # HACK: 2026-11-17: azapi 2.13 does not have this version of the API
-  schema_validation_enabled = false
-  tags                      = var.tags
+  tags = var.tags
+
+  timeouts {
+    # Hub contain a Firewall which can easily take more than 30 minutes to deploy
+    create = "1h"
+    update = "1h"
+    delete = "45m"
+  }
 }

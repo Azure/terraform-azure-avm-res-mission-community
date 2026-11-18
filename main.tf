@@ -26,9 +26,7 @@ resource "azapi_resource" "this" {
       monitoringSettings           = var.monitoring_settings
     }
   }
-  // HACK: 2026-11-16: Temporary because azapi 2.13 does not have this API version
-  schema_validation_enabled = false
-  tags                      = var.tags
+  tags = var.tags
 
   dynamic "identity" {
     for_each = module.avm_interfaces.managed_identities_azapi != null ? [module.avm_interfaces.managed_identities_azapi] : []

@@ -4,7 +4,7 @@ terraform {
   required_providers {
     azapi = {
       source  = "Azure/azapi"
-      version = "~> 2.13"
+      version = "~> 2.14"
     }
     # tflint-ignore: terraform_unused_required_providers
     random = {
