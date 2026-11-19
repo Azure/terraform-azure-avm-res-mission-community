@@ -32,7 +32,7 @@ run "valid_maintenance_configuration_on" {
 
   variables {
     maintenance_mode_configuration = {
-      mode          = "On"
+      mode          = "General"
       justification = "Governance"
       principals = [
         {

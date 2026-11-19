@@ -157,8 +157,8 @@ variable "maintenance_mode_configuration" {
   description = <<DESCRIPTION
 Configuration for the Community's maintenance mode.
 
-- `mode` - Defines the maintenance mode status. Accepted values are 'On', 'Off', 'General', 'CanNotDelete', and 'Advanced'.
-- `justification` - (Optional) Provides a justification for the maintenance mode. Required when `mode` is not 'Off'. Defaults to `Off`. Allowed values are 'Off', 'Governance', 'Networking' and 'NotSpecified'.
+- `mode` - Defines the maintenance mode status. Accepted values are 'Off', 'General', and 'Advanced'.
+- `justification` - (Optional) Provides a justification for the maintenance mode. Required when `mode` is not 'Off'. Defaults to `Off`. Allowed values are 'Off', 'Governance', and 'Networking'.
 - `principals` - A list of principal objects with `id` and `type` attributes representing the affected principals.
 DESCRIPTION
 
@@ -171,12 +171,12 @@ DESCRIPTION
     error_message = "If maintenance mode is not 'Off', at least one principal must be provided."
   }
   validation {
-    condition     = contains(["On", "Off", "General", "CanNotDelete", "Advanced"], var.maintenance_mode_configuration.mode)
-    error_message = "The mode must be one of 'On', 'Off', 'General', 'CanNotDelete', or 'Advanced'."
+    condition     = contains(["Off", "General", "Advanced"], var.maintenance_mode_configuration.mode)
+    error_message = "The mode must be one of 'Off', 'General', or 'Advanced'."
   }
   validation {
-    condition     = contains(["Off", "Governance", "Networking", "NotSpecified"], var.maintenance_mode_configuration.justification)
-    error_message = "The justification must be one of 'Off', 'Governance', 'Networking', or 'NotSpecified'."
+    condition     = contains(["Off", "Governance", "Networking"], var.maintenance_mode_configuration.justification)
+    error_message = "The justification must be one of 'Off', 'Governance', or 'Networking'."
   }
   validation {
     condition = alltrue(flatten([
